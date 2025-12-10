@@ -20,7 +20,7 @@ export function Navigation() {
               to={to}
               className={({ isActive }) =>
                 cn(
-                  'flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200',
+                  'flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200',
                   'hover:bg-primary/10 group',
                   isActive
                     ? 'text-primary'
@@ -34,13 +34,13 @@ export function Navigation() {
                     className={cn(
                       'p-2 rounded-xl transition-all duration-200',
                       isActive
-                        ? 'bg-primary text-primary-foreground shadow-soft'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
                         : 'group-hover:bg-primary/10'
                     )}
                   >
                     <Icon className="w-5 h-5" />
                   </div>
-                  <span className="text-xs font-medium">{label}</span>
+                  <span className="text-sm font-medium">{label}</span>
                 </>
               )}
             </NavLink>
