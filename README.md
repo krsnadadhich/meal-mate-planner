@@ -1,73 +1,109 @@
-# Welcome to your Lovable project
+# Meal Mate Planner
 
-## Project info
+A meal planning application that helps you organize recipes, manage your grocery inventory, and plan meals efficiently.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Project Overview
 
-## How can I edit this code?
+Meal Mate Planner is a cross-platform web application built with modern technologies. It integrates with the Spoonacular API to provide recipe suggestions and nutritional information. The app helps users create meal plans, manage their grocery lists, and organize recipes in one convenient place.
 
-There are several ways of editing your application.
+## Getting Started
 
-**Use Lovable**
+### Prerequisites
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- Node.js (v16 or higher)
+- Bun package manager or npm
+- Spoonacular API key (get one at https://spoonacular.com/food-api)
 
-Changes made via Lovable will be committed automatically to this repo.
+### Installation
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Follow these steps to get the project running locally:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Step 1: Clone the repository
+git clone https://github.com/krsnadadhich/meal-mate-planner.git
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Step 2: Navigate to the project directory
+cd meal-mate-planner
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Step 3: Install dependencies
+bun install
+# or
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Start the development server
+bun run dev
+# or
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
+## Technology Stack
 
 This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Vite** - Fast build tool and dev server
+- **TypeScript** - Type-safe JavaScript
+- **React** - UI library
+- **React Router** - Client-side routing
+- **shadcn-ui** - High-quality UI components
+- **Tailwind CSS** - Utility-first CSS framework
+- **Capacitor** - Cross-platform app framework
+- **Spoonacular API** - Recipe and nutrition data
 
-## How can I deploy this project?
+## Project Structure
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+```
+src/
+├── components/          # Reusable UI components
+│   ├── grocery/        # Grocery management components
+│   ├── meal/           # Meal planning components
+│   ├── recipe/         # Recipe display components
+│   ├── layout/         # Layout components
+│   └── ui/             # shadcn-ui components
+├── pages/              # Page components
+├── services/           # API and storage services
+├── hooks/              # Custom React hooks
+├── lib/                # Utility functions
+├── types/              # TypeScript type definitions
+├── App.tsx             # Main App component
+└── main.tsx            # Entry point
+```
 
-## Can I connect a custom domain to my Lovable project?
+## Features
 
-Yes, you can!
+- **Meal Planning**: Create and manage meal plans
+- **Recipe Management**: Browse and save recipes from Spoonacular
+- **Grocery Inventory**: Track and manage your grocery items
+- **API Integration**: Real-time recipe data from Spoonacular API
+- **Local Storage**: Persist data in browser storage
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Available Scripts
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- `bun run dev` - Start development server
+- `bun run build` - Build for production
+- `bun run preview` - Preview production build
+- `bun run lint` - Run ESLint checks
+
+## Configuration
+
+### Spoonacular API Key
+
+To use recipe features, you need a Spoonacular API key:
+
+1. Sign up at https://spoonacular.com/food-api
+2. Get your API key from your account dashboard
+3. Enter the API key in the app's settings dialog when prompted
+
+### Capacitor Configuration
+
+The project is configured for Capacitor to enable cross-platform deployment. Configuration can be found in `capacitor.config.ts`
+
+## Contributing
+
+Feel free to fork this repository and submit pull requests with improvements.
+
+## License
+
+This project is open source and available under the MIT License.
