@@ -1,51 +1,55 @@
-import { NavLink } from 'react-router-dom';
-import { Home, ShoppingBasket, ChefHat, Calendar } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { Home, ChefHat, BookOpen, Sparkles, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { to: '/', icon: Home, label: 'Home' },
-  { to: '/inventory', icon: ShoppingBasket, label: 'Inventory' },
+  { to: '/home', icon: Home, label: 'Home' },
   { to: '/recipes', icon: ChefHat, label: 'Recipes' },
-  { to: '/meal-plan', icon: Calendar, label: 'Meal Plan' },
+  { to: '/recipe-book', icon: BookOpen, label: 'Book' },
+  { to: '/chatbot', icon: Sparkles, label: 'Chat' },
+  { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export function Navigation() {
+  const location = useLocation();
+  
+  // Hide navigation on onboarding pages
+  const hideNavPaths = ['/', '/groceries', '/diet-selection', '/cuisine-selection'];
+  if (hideNavPaths.includes(location.pathname)) {
+    return null;
+  }
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border shadow-card md:top-0 md:bottom-auto md:border-t-0 md:border-b">
-      <div className="container mx-auto">
-        <div className="flex items-center justify-around md:justify-center md:gap-8 py-2 md:py-4">
-          {navItems.map(({ to, icon: Icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                cn(
-                  'flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200',
-                  'hover:bg-primary/10 group',
-                  isActive
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <div
-                    className={cn(
-                      'p-2 rounded-xl transition-all duration-200',
-                      isActive
-                        ? 'bg-primary text-primary-foreground shadow-soft'
-                        : 'group-hover:bg-primary/10'
-                    )}
-                  >
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <span className="text-xs font-medium">{label}</span>
-                </>
-              )}
-            </NavLink>
-          ))}
-        </div>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t shadow-lg safe-area-bottom">
+      <div className="flex items-center justify-around py-2 px-2">
+        {navItems.map(({ to, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) =>
+              cn(
+                'flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[56px]',
+                isActive
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              )
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <div
+                  className={cn(
+                    'p-2 rounded-xl transition-all duration-200',
+                    isActive && 'bg-primary text-primary-foreground'
+                  )}
+                >
+                  <Icon className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-medium">{label}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
       </div>
     </nav>
   );
