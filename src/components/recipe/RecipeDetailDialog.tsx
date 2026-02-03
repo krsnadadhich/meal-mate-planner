@@ -30,7 +30,7 @@ export function RecipeDetailDialog({
     if (recipe && open) {
       setLoading(true);
       spoonacularService
-        .getRecipeDetails(recipe.id)
+        .getRecipeDetails(Number(recipe.id))
         .then(setDetails)
         .catch(console.error)
         .finally(() => setLoading(false));
