@@ -1,4 +1,4 @@
-import { GroceryItem, MealPlan, Recipe, ChatMessage, UserPreferences, DietType } from '@/types';
+import { GroceryItem, MealPlan, Recipe, ChatMessage, UserPreferences, DietType, ApiKeys, RawRecipesByCuisine } from '@/types';
 
 const GROCERY_KEY = 'meal-planner-groceries';
 const MEAL_PLAN_KEY = 'meal-planner-meals';
@@ -6,6 +6,8 @@ const SELECTED_RECIPES_KEY = 'meal-planner-selected-recipes';
 const RECIPE_BOOK_KEY = 'meal-planner-recipe-book';
 const CHAT_MESSAGES_KEY = 'meal-planner-chat-messages';
 const USER_PREFERENCES_KEY = 'meal-planner-user-preferences';
+const API_KEYS_KEY = 'meal-planner-api-keys';
+const RAW_RECIPES_KEY = 'meal-planner-raw-recipes';
 
 const defaultPreferences: UserPreferences = {
   groceries: [],
@@ -14,7 +16,55 @@ const defaultPreferences: UserPreferences = {
   onboardingComplete: false,
 };
 
+const defaultApiKeys: ApiKeys = {
+  foodApiKey: null,
+  geminiApiKey: null,
+};
+
 export const storageService = {
+  // API Keys
+  getApiKeys: (): ApiKeys => {
+    const data = localStorage.getItem(API_KEYS_KEY);
+    return data ? { ...defaultApiKeys, ...JSON.parse(data) } : defaultApiKeys;
+  },
+
+  saveApiKeys: (keys: Partial<ApiKeys>): void => {
+    const current = storageService.getApiKeys();
+    localStorage.setItem(API_KEYS_KEY, JSON.stringify({ ...current, ...keys }));
+  },
+
+  hasFoodApiKey: (): boolean => {
+    const keys = storageService.getApiKeys();
+    return !!keys.foodApiKey;
+  },
+
+  hasGeminiApiKey: (): boolean => {
+    const keys = storageService.getApiKeys();
+    return !!keys.geminiApiKey;
+  },
+
+  getFoodApiKey: (): string | null => {
+    return storageService.getApiKeys().foodApiKey;
+  },
+
+  getGeminiApiKey: (): string | null => {
+    return storageService.getApiKeys().geminiApiKey;
+  },
+
+  // Raw Recipes Cache (by cuisine)
+  getRawRecipesByCuisine: (): RawRecipesByCuisine => {
+    const data = localStorage.getItem(RAW_RECIPES_KEY);
+    return data ? JSON.parse(data) : {};
+  },
+
+  saveRawRecipesByCuisine: (recipes: RawRecipesByCuisine): void => {
+    localStorage.setItem(RAW_RECIPES_KEY, JSON.stringify(recipes));
+  },
+
+  clearRawRecipes: (): void => {
+    localStorage.removeItem(RAW_RECIPES_KEY);
+  },
+
   // User Preferences
   getPreferences: (): UserPreferences => {
     const data = localStorage.getItem(USER_PREFERENCES_KEY);
@@ -227,5 +277,7 @@ export const storageService = {
     localStorage.removeItem(RECIPE_BOOK_KEY);
     localStorage.removeItem(CHAT_MESSAGES_KEY);
     localStorage.removeItem(USER_PREFERENCES_KEY);
+    localStorage.removeItem(API_KEYS_KEY);
+    localStorage.removeItem(RAW_RECIPES_KEY);
   },
 };

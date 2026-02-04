@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Settings, ShoppingBasket, Leaf, UtensilsCrossed, 
   BookOpen, MessageSquare, Trash2, Info, ChevronRight,
-  AlertTriangle
+  AlertTriangle, Key, CheckCircle
 } from 'lucide-react';
 import { storageService } from '@/services/storageService';
 import { toast } from 'sonner';
@@ -29,6 +29,7 @@ export default function SettingsPage() {
   const [cuisineCount, setCuisineCount] = useState(0);
   const [recipeCount, setRecipeCount] = useState(0);
   const [chatCount, setChatCount] = useState(0);
+  const [hasApiKeys, setHasApiKeys] = useState({ food: false, gemini: false });
 
   useEffect(() => {
     loadStats();
@@ -41,6 +42,10 @@ export default function SettingsPage() {
     setCuisineCount(prefs.cuisines.length);
     setRecipeCount(storageService.getRecipeBook().length);
     setChatCount(storageService.getChatMessages().length);
+    setHasApiKeys({
+      food: storageService.hasFoodApiKey(),
+      gemini: storageService.hasGeminiApiKey(),
+    });
   };
 
   const handleClearRecipes = () => {
@@ -82,6 +87,43 @@ export default function SettingsPage() {
 
       {/* Settings List */}
       <div className="px-6 py-4 space-y-6">
+        {/* API Settings Section */}
+        <div>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">
+            API Configuration
+          </h2>
+          <Card 
+            className="p-4 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate('/api-settings')}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Key className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="font-medium">API Settings</p>
+                  <p className="text-sm text-muted-foreground">
+                    Configure Spoonacular & Gemini keys
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {hasApiKeys.food && hasApiKeys.gemini ? (
+                  <Badge variant="secondary" className="bg-green-500/10 text-green-600">
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    Configured
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="bg-amber-500/10 text-amber-600">
+                    <AlertTriangle className="w-3 h-3 mr-1" />
+                    Incomplete
+                  </Badge>
+                )}
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </div>
+            </div>
+          </Card>
+        </div>
+
         {/* Preferences Section */}
         <div>
           <h2 className="text-sm font-medium text-muted-foreground mb-3">

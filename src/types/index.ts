@@ -29,6 +29,11 @@ export interface Recipe {
   matchPercentage?: number;
   instructions?: string;
   readyInMinutes?: number;
+  // New fields for API integration
+  apiRecipeId?: string;
+  availableIngredients?: string[];
+  missingIngredients?: string[];
+  sourceApi?: 'spoonacular' | 'mock';
 }
 
 export interface Ingredient {
@@ -77,6 +82,27 @@ export const CUISINE_OPTIONS = [
   'Quick Meals',
 ];
 
+// Map user-friendly cuisine names to Spoonacular API cuisine names
+export const CUISINE_API_MAP: Record<string, string> = {
+  'Indian': 'indian',
+  'Chinese': 'chinese',
+  'Italian': 'italian',
+  'Mexican': 'mexican',
+  'Thai': 'thai',
+  'Korean': 'korean',
+  'Japanese': 'japanese',
+  'Mediterranean': 'mediterranean',
+  'Middle Eastern': 'middle eastern',
+  'Continental': 'european',
+  'South Indian': 'indian',
+  'North Indian': 'indian',
+  'Indo-Chinese': 'chinese',
+  'Street Food': 'indian',
+  'High-Protein': '',
+  'Low-Calorie': '',
+  'Quick Meals': '',
+};
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -89,4 +115,38 @@ export interface UserPreferences {
   dietType: DietType;
   cuisines: string[];
   onboardingComplete: boolean;
+}
+
+export interface ApiKeys {
+  foodApiKey: string | null;
+  geminiApiKey: string | null;
+}
+
+export interface RawRecipesByCuisine {
+  [cuisine: string]: ApiRecipe[];
+}
+
+export interface ApiRecipe {
+  id: number;
+  title: string;
+  image: string;
+  cuisine: string;
+  readyInMinutes?: number;
+  servings?: number;
+  usedIngredientCount?: number;
+  missedIngredientCount?: number;
+  usedIngredients?: Ingredient[];
+  missedIngredients?: Ingredient[];
+  nutrition?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+}
+
+export interface RecipeFetchError {
+  cuisine: string;
+  error: string;
+  type: 'missing_key' | 'quota_exceeded' | 'no_results' | 'network_error';
 }
