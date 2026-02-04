@@ -16,6 +16,7 @@ import RecipeDetailPage from "./pages/RecipeDetailPage";
 import RecipeBookPage from "./pages/RecipeBookPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import SettingsPage from "./pages/SettingsPage";
+import ApiSettingsPage from "./pages/ApiSettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/recipe-book" element={<RecipeBookPage />} />
             <Route path="/chatbot" element={<ChatbotPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/api-settings" element={<ApiSettingsPage />} />
             
             {/* 404 */}
             <Route path="*" element={<NotFound />} />

@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
   ChefHat, ShoppingBasket, BookOpen, Sparkles, 
-  ArrowRight, Plus, Clock
+  ArrowRight, Plus, Clock, Key, AlertTriangle
 } from 'lucide-react';
 import { storageService } from '@/services/storageService';
 import { Recipe } from '@/types';
@@ -14,11 +14,16 @@ export default function HomePage() {
   const navigate = useNavigate();
   const [groceryCount, setGroceryCount] = useState(0);
   const [recentRecipes, setRecentRecipes] = useState<Recipe[]>([]);
+  const [hasApiKeys, setHasApiKeys] = useState({ food: false, gemini: false });
 
   useEffect(() => {
     const prefs = storageService.getPreferences();
     setGroceryCount(prefs.groceries.length);
     setRecentRecipes(storageService.getRecipeBook().slice(0, 3));
+    setHasApiKeys({
+      food: storageService.hasFoodApiKey(),
+      gemini: storageService.hasGeminiApiKey(),
+    });
   }, []);
 
   return (
@@ -62,6 +67,34 @@ export default function HomePage() {
 
       {/* Main Content */}
       <div className="px-6 py-6 space-y-6">
+        {/* API Keys Warning */}
+        {(!hasApiKeys.food || !hasApiKeys.gemini) && (
+          <Card 
+            className="p-4 border-amber-500/30 bg-amber-500/5 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => navigate('/api-settings')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                <Key className="w-5 h-5 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-medium text-sm flex items-center gap-2">
+                  API Keys Required
+                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {!hasApiKeys.food && !hasApiKeys.gemini 
+                    ? 'Configure API keys to enable recipes and AI chat'
+                    : !hasApiKeys.food 
+                    ? 'Add Spoonacular key for recipes'
+                    : 'Add Gemini key for AI chat'}
+                </p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-muted-foreground" />
+            </div>
+          </Card>
+        )}
+
         {/* Start Planning CTA */}
         {groceryCount === 0 && (
           <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">

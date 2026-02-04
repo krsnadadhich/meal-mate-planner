@@ -2,12 +2,13 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   ArrowLeft, Clock, Flame, Dumbbell, Users, 
-  BookmarkPlus, Check, Lightbulb 
+  BookmarkPlus, Check, Lightbulb, ShoppingBasket, AlertCircle
 } from 'lucide-react';
 import { storageService } from '@/services/storageService';
+import { recipeApiService } from '@/services/recipeApiService';
 import { Recipe } from '@/types';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
@@ -18,21 +19,42 @@ export default function RecipeDetailPage() {
   const { id } = useParams();
   const [recipe, setRecipe] = useState<Recipe | null>(location.state?.recipe || null);
   const [isSaved, setIsSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!recipe && id) {
-      // Try to find recipe in recipe book
-      const savedRecipes = storageService.getRecipeBook();
-      const found = savedRecipes.find(r => String(r.id) === id);
-      if (found) {
-        setRecipe(found);
+    const loadRecipeDetails = async () => {
+      if (!recipe && id) {
+        // Try to find recipe in recipe book first
+        const savedRecipes = storageService.getRecipeBook();
+        const found = savedRecipes.find(r => String(r.id) === id);
+        if (found) {
+          setRecipe(found);
+          return;
+        }
       }
-    }
-    
-    if (recipe) {
-      setIsSaved(storageService.isInRecipeBook(recipe.id));
-    }
-  }, [recipe, id]);
+
+      // If we have a recipe from state but missing details, fetch full details
+      if (recipe && recipe.sourceApi === 'spoonacular' && (!recipe.steps || recipe.steps.length === 0)) {
+        setLoading(true);
+        try {
+          const details = await recipeApiService.getRecipeDetails(Number(recipe.id));
+          if (details) {
+            setRecipe({ ...recipe, ...details, cuisine: recipe.cuisine });
+          }
+        } catch (error) {
+          console.error('Error fetching recipe details:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+      
+      if (recipe) {
+        setIsSaved(storageService.isInRecipeBook(recipe.id));
+      }
+    };
+
+    loadRecipeDetails();
+  }, [recipe?.id, id]);
 
   const handleSave = () => {
     if (!recipe) return;
@@ -95,22 +117,22 @@ export default function RecipeDetailPage() {
       <div className="px-6 py-6 space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-4 gap-3">
-          {recipe.cookingTime && (
+          {(recipe.cookingTime || recipe.readyInMinutes) && (
             <StatCard
               icon={Clock}
-              value={`${recipe.cookingTime}`}
+              value={`${recipe.cookingTime || recipe.readyInMinutes}`}
               label="min"
             />
           )}
           <StatCard
             icon={Flame}
-            value={`${recipe.calories}`}
+            value={`${Math.round(recipe.calories || 0)}`}
             label="cal"
             iconColor="text-orange-500"
           />
           <StatCard
             icon={Dumbbell}
-            value={`${recipe.protein}g`}
+            value={`${Math.round(recipe.protein || 0)}g`}
             label="protein"
             iconColor="text-blue-500"
           />
@@ -123,6 +145,55 @@ export default function RecipeDetailPage() {
           )}
         </div>
 
+        {/* Ingredient Matching */}
+        {(recipe.availableIngredients || recipe.missingIngredients) && (
+          <div className="grid grid-cols-2 gap-4">
+            {/* Available Ingredients */}
+            {recipe.availableIngredients && recipe.availableIngredients.length > 0 && (
+              <Card className="p-4 border-green-500/30 bg-green-500/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Check className="w-5 h-5 text-green-600" />
+                  <h3 className="font-semibold text-sm text-green-700 dark:text-green-400">
+                    You Have ({recipe.availableIngredients.length})
+                  </h3>
+                </div>
+                <ul className="space-y-1 text-sm">
+                  {recipe.availableIngredients.slice(0, 5).map((ing, i) => (
+                    <li key={i} className="text-muted-foreground truncate">• {ing}</li>
+                  ))}
+                  {recipe.availableIngredients.length > 5 && (
+                    <li className="text-muted-foreground text-xs">
+                      +{recipe.availableIngredients.length - 5} more
+                    </li>
+                  )}
+                </ul>
+              </Card>
+            )}
+
+            {/* Missing Ingredients */}
+            {recipe.missingIngredients && recipe.missingIngredients.length > 0 && (
+              <Card className="p-4 border-amber-500/30 bg-amber-500/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <ShoppingBasket className="w-5 h-5 text-amber-600" />
+                  <h3 className="font-semibold text-sm text-amber-700 dark:text-amber-400">
+                    Need ({recipe.missingIngredients.length})
+                  </h3>
+                </div>
+                <ul className="space-y-1 text-sm">
+                  {recipe.missingIngredients.slice(0, 5).map((ing, i) => (
+                    <li key={i} className="text-muted-foreground truncate">• {ing}</li>
+                  ))}
+                  {recipe.missingIngredients.length > 5 && (
+                    <li className="text-muted-foreground text-xs">
+                      +{recipe.missingIngredients.length - 5} more
+                    </li>
+                  )}
+                </ul>
+              </Card>
+            )}
+          </div>
+        )}
+
         {/* Nutrition */}
         {(recipe.carbs || recipe.fats) && (
           <Card className="p-4">
@@ -131,13 +202,13 @@ export default function RecipeDetailPage() {
               {recipe.carbs && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Carbs</span>
-                  <span className="font-medium">{recipe.carbs}g</span>
+                  <span className="font-medium">{Math.round(recipe.carbs)}g</span>
                 </div>
               )}
               {recipe.fats && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Fats</span>
-                  <span className="font-medium">{recipe.fats}g</span>
+                  <span className="font-medium">{Math.round(recipe.fats)}g</span>
                 </div>
               )}
             </div>
@@ -146,30 +217,59 @@ export default function RecipeDetailPage() {
 
         {/* Ingredients */}
         <Card className="p-4">
-          <h2 className="font-semibold mb-3">Ingredients</h2>
-          <ul className="space-y-2">
-            {recipe.ingredients.map((ingredient, index) => (
-              <li key={index} className="flex items-center gap-3 text-sm">
-                <div className="w-2 h-2 rounded-full bg-primary" />
-                <span>{ingredient}</span>
-              </li>
-            ))}
-          </ul>
+          <h2 className="font-semibold mb-3">All Ingredients</h2>
+          {loading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-4 w-full" />
+              ))}
+            </div>
+          ) : recipe.ingredients.length > 0 ? (
+            <ul className="space-y-2">
+              {recipe.ingredients.map((ingredient, index) => (
+                <li key={index} className="flex items-center gap-3 text-sm">
+                  <div className="w-2 h-2 rounded-full bg-primary" />
+                  <span>{ingredient}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              Ingredient details loading...
+            </p>
+          )}
         </Card>
 
         {/* Steps */}
         <Card className="p-4">
           <h2 className="font-semibold mb-3">Instructions</h2>
-          <ol className="space-y-4">
-            {recipe.steps.map((step, index) => (
-              <li key={index} className="flex gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-semibold flex items-center justify-center flex-shrink-0">
-                  {index + 1}
+          {loading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex gap-3">
+                  <Skeleton className="w-6 h-6 rounded-full flex-shrink-0" />
+                  <Skeleton className="h-4 w-full" />
                 </div>
-                <p className="text-sm text-muted-foreground pt-0.5">{step}</p>
-              </li>
-            ))}
-          </ol>
+              ))}
+            </div>
+          ) : recipe.steps.length > 0 ? (
+            <ol className="space-y-4">
+              {recipe.steps.map((step, index) => (
+                <li key={index} className="flex gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-semibold flex items-center justify-center flex-shrink-0">
+                    {index + 1}
+                  </div>
+                  <p className="text-sm text-muted-foreground pt-0.5">{step}</p>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              Instructions will be loaded when you open the recipe.
+            </p>
+          )}
         </Card>
 
         {/* Tips */}
@@ -187,6 +287,15 @@ export default function RecipeDetailPage() {
               ))}
             </ul>
           </Card>
+        )}
+
+        {/* API Source Badge */}
+        {recipe.sourceApi && (
+          <div className="text-center">
+            <Badge variant="outline" className="text-xs">
+              Recipe from {recipe.sourceApi === 'spoonacular' ? 'Spoonacular API' : 'Meal Mate'}
+            </Badge>
+          </div>
         )}
       </div>
 
